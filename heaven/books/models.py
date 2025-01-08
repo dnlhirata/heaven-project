@@ -1,3 +1,9 @@
-from django.db import models
+from django_extensions.db.models import TimeStampedModel
+from django.db.models import CharField
+from django.db.models import TextField
 
-# Create your models here.
+
+class Book(TimeStampedModel):
+    external_id = CharField(max_length=255)
+    content = TextField()
+    metadata = TextField()
