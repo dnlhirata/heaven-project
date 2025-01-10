@@ -1,4 +1,7 @@
 import random
+from collections import defaultdict
+
+from rdflib import Graph, Namespace
 
 
 def split_content(content: str, chuck_size: int = 10000) -> list[str]:
@@ -14,3 +17,24 @@ def get_random_chunk(content, chunk_size, token_limit):
 
     chunk = content[start : (start + chunk_size)]
     return chunk
+
+
+def parse_rdf_metadata(metadata: str) -> dict:
+    graph = Graph()
+    graph.parse(data=metadata, format="xml")
+
+    PGTERMS = Namespace("http://www.gutenberg.org/2009/pgterms/")
+    DCTERMS = Namespace("http://purl.org/dc/terms/")
+    RDF = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+
+    metadata = defaultdict(str)
+    for _, p, o in graph:
+        if p == DCTERMS.title:
+            metadata["title"] = str(o)
+        elif p == PGTERMS.name:
+            metadata["author"] = str(o)
+        elif p == DCTERMS.language:
+            for _, _, lang_o in graph.triples((o, RDF.value, None)):
+                metadata["language"] = str(lang_o)
+
+    return metadata

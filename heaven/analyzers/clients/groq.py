@@ -5,7 +5,7 @@ from groq import Groq
 class GroqClient:
     def __init__(self):
         self.client = Groq(
-            api_key=settings.GROQ_API_KEY,
+            api_key=settings.GROQ_APIKEY,
         )
         self.model = "llama3-8b-8192"
 

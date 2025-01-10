@@ -26,8 +26,13 @@ class BookViewSet(ModelViewSet):
         except Http404:
             book_id = self.kwargs.get(self.lookup_field)
             content = GutenbergClient().get_book_content(book_id=book_id)
-            # metadata = GutenbergClient().get_book_metadata(book_id=book_id)
-            instance = Book.objects.create(external_id=book_id, content=content)
+            metadata = GutenbergClient().get_book_metadata(book_id=book_id)
+            instance = Book.objects.create(
+                external_id=book_id, content=content, metadata=metadata
+            )
+
+        session_id = request.COOKIES.get("sessionid")
+        print(request.COOKIES)
 
         serializer = self.get_serializer(instance=instance)
         return Response(serializer.data)
@@ -48,3 +53,9 @@ class BookViewSet(ModelViewSet):
         return Response(
             {"chunk": chunk, "questions": cleaned_questions}, status=HTTP_200_OK
         )
+
+    @action(detail=False)
+    def last_viewed(self, request):
+        session_id = request.COOKIES.get("sessionid")
+        print(session_id)
+        return Response()
