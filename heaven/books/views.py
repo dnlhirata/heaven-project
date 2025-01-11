@@ -10,7 +10,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from books.clients.gutenberg import GutenbergClient
 from books.models import Book
-from books.serializers import BookSerializer
+from books.serializers import BookSerializer, LastViewedSerializer
 from books.utils import get_random_chunk
 
 
@@ -31,9 +31,7 @@ class BookViewSet(ModelViewSet):
                 external_id=book_id, content=content, metadata=metadata
             )
 
-        session_id = request.COOKIES.get("sessionid")
-        print(request.COOKIES)
-
+        instance.viewed_by.add(request.user)
         serializer = self.get_serializer(instance=instance)
         return Response(serializer.data)
 
@@ -54,8 +52,8 @@ class BookViewSet(ModelViewSet):
             {"chunk": chunk, "questions": cleaned_questions}, status=HTTP_200_OK
         )
 
-    @action(detail=False)
+    @action(detail=False, serializer_class=LastViewedSerializer)
     def last_viewed(self, request):
-        session_id = request.COOKIES.get("sessionid")
-        print(session_id)
-        return Response()
+        books = request.user.viewed_books.all()
+        serializer = self.get_serializer(instance=books, many=True)
+        return Response(serializer.data)
